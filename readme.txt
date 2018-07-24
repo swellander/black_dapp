@@ -27,3 +27,5 @@ write function nextState()
 on contract init, shuffle cards
 
 merge all the logic together
+
+100 will be the magic number to tell that the card has been removed from the deck.
