@@ -29,28 +29,28 @@ see spreadsheet
 
 ## DONE 1
 
-- [x] work on my local jvm ethereum network
+work on my local jvm ethereum network
 
 - [x] write function shuffleDeck(): it will randomly shuffle uint8[52]
 - [x] write function getDeck() public
 
 ## DONE 2
 
-- [x] work on my local jvm ethereum network
+work on my local jvm ethereum network
 
 - [x] write function computeCardValue() returns uint8
 - [x] write function computeHandValue() returns uint8
 
 ## DONE 3
 
-- [x] work on my local jvm ethereum network
+work on my local jvm ethereum network
 
 - [x] write function dealerDecision() returns bytes2
 - [x] decision is Hit or Stand
 
 ## DONE 4
 
-- [x] work on my local jvm ethereum network
+work on my local jvm ethereum network
 
 - [x] write function initPlayerHand()
 - [x] write function initDealerHand()
@@ -62,14 +62,14 @@ see spreadsheet
 
 ## DONE 5
 
-- [x] work on my local jvm ethereum network
+work on my local jvm ethereum network
 
 - [x] write function getPlayerHand()
 - [x] write function getDealerVisibleCard()
 
 ## TODO 6
 
-- [ ] work on my local jvm ethereum network
+work on my local jvm ethereum network
 
 - [ ] write function nextState()
 
