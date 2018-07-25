@@ -40,11 +40,11 @@ contract has a 'Struct Game'
 
     1. wait for player to enter($gameId) the game
         $gameId is javascript random number
-    2. shuffle deck, call public free method contract.shuffleDeck(52) returns (deck), give 2 cards to player and give 2 cards to dealer (only show 1 dealer card to the user)
-    3. call public free method contract.isGameover($cards, $#-of-cards-given) -> $result-is-21blackdapp-or-lose-or-continue
+    2. shuffle deck, implemented in UI, give 2 cards to player and give 2 cards to dealer (only show 1 dealer card to the user)
+    3. call public free method contract.computePlayerHand($cards, $#-of-cards-given) -> $handValue
             turn 1 # cards is 4
             turn 2 # cards is 5
-    3.1. if blackdapp wait for user to click get reward and call contract.finalize($cards, $#-of-player-cards)
+    3.1. if blackdapp wait for user to click get reward and call contract.finalize($gameId, $cards, $#-of-player-cards)
     
     3.2. user can choose HIT or STAND
     3.2.1 if HIT, UI gives player a card, $#-of-cards-given++ then continue at step#3.
@@ -55,13 +55,20 @@ contract has a 'Struct Game'
 
 see spreadsheet
 
-# contract methods
+# contract design
 
 contract blackdapp {
-    function enter(uint8 gameId) {}
-    function shuffleDeck(uint8 numberOfCards) returns (uint8[]) public pure {}
-    function isGameover(uint8[] cards, uint8 numberOfCardsGiven) returns (uint8 result-is-21blackdapp-or-lose-or-continue) {}
-    function finalize(uint8[] cards, uint8 numberOfCardsGiven) {}
+
+    struct Game {
+        address player;
+        uint256 payout;
+    }
+
+    mapping (uint8 => Game) games;
+
+    function enter(uint256 gameId) {} // creates Game
+    function computePlayerHand(uint8[] cards, uint8 numberOfCardsGiven) returns (uint8 playerHandValue) {}
+    function finalize(uint256 gameId, uint8[] cards, uint8 numberOfCardsGiven) {}
 }
 
 

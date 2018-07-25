@@ -8,113 +8,91 @@ contract Blackdapp {
     address public manager;
     
     // uint8[52] public deck;
-    // uint8[9] public playerCards;
-    // uint8[9] public dealerCards;
 
-    mapping (uint8 => uint8) deck;
-    mapping (uint8 => uint8) playerCards;
-    mapping (uint8 => uint8) dealerCards;
+    struct Game {
+        address player;
+        uint256 payout;
+    }
 
-    uint numDeck;
+    event GameStarted(uint256 gameId, address player);
+    // gameended-outcome is 0 player lost, 1 player won
+    event GameEnded(uint256 gameId, address player, uint8 outcome, uint8 playerHandValue, uint8 dealerHandValue);
+
+    mapping (uint256 => Game) public games;
 
     constructor() public {
         manager = msg.sender;
-
-        // initDeck(deck);
-        // initPlayerHand(playerCards);
-        // initDealerHand(dealerCards);
     }
 
-    function enter() public payable {
-        // TODO shuffle
-        
-        require(msg.value > .01 ether);
+    function enter(uint256 gameId) public {
+        // require(msg.value > .01 ether);
+        games[gameId] = Game({player: msg.sender, payout: 0});
+        emit GameStarted(gameId, msg.sender);
     }
 
-    function shuffleDeckArray() public {
-        uint8[52] d;
+    // return player hand value
+    function computePlayerHand(uint8[] cards, uint8 numberOfCards) public pure returns (uint8) {
+        uint8 value;
 
-        for (uint8 i = 0; i < 52-1; i++) {
-            uint256 rand = randHash(i);
-            uint8 randIndex = randomBetween(rand, i, 52);
+        for (uint8 i = 0; i < numberOfCards; i++) {
+            value += computeCardValue(cards[i]);
+        }
+
+        return value;
+    }
+    
+    function finalize(uint256 gameId, uint8[] playerCards, uint8 numberOfPlayerCards, uint8[] dealerCards, uint8[] deck) public returns (uint8) {
+        uint8 playerValue = computePlayerHand(playerCards, numberOfPlayerCards);
+
+        uint8 dealerCard1 = dealerCards[0];
+        uint8 dealerCard2 = dealerCards[1];
+        uint8 dealerValue = computeCardValue(dealerCard1) + computeCardValue(dealerCard2);
+
+        uint8 dealerWantsOneMoreCardCounter = 0;
+
+        bytes2 dealer = dealerDecision(playerValue, dealerValue);
+        while(dealer == 'H'){
+            uint8 dealerNewCard = deck[dealerWantsOneMoreCardCounter];
+            dealerWantsOneMoreCardCounter++;
             
-            swapArray(d, i, randIndex);
+            dealerValue += computeCardValue(dealerNewCard);
+            dealer = dealerDecision(playerValue, dealerValue);
+        }
+
+        uint8 result = whoWins(playerValue, dealerValue);
+
+        emit GameEnded(gameId, msg.sender, result, playerValue, dealerValue);
+        if(result == 0){
+            // play lost
+        } else {
+            // play won
+        }
+
+        return result;
+    }
+
+    // returns 0 if player loses
+    // returns 1 if player wins
+    function whoWins(uint8 playerValue, uint8 dealerValue) private pure returns (uint8) {
+        if (playerValue > 21) {
+            return 0;
+        }
+
+        if (dealerValue > 21) {
+            return 1;
+        }
+
+        if (playerValue == 21 && dealerValue == 21) {
+            return 1;
+        }
+
+        if (playerValue > dealerValue) {
+            return 1;
+        } else {
+            return 0;
         }
     }
 
-    function shuffleDeckMapping() public {
-
-        for (uint8 i = 0; i < 52-1; i++) {
-            uint256 rand = randHash(i);
-            uint8 randIndex = randomBetween(rand, i, 52);
-            
-            uint8 card1 = deck[i];
-            uint8 card2 = deck[randIndex];
-
-            // init on the fly
-            if (card1 == 0) {
-                card1 = i + 1;
-            }
-            // init on the fly
-            if (card2 == 0) {
-                card2 = randIndex + 1;
-            }
-
-            ( deck[i], deck[randIndex] ) = swap(card1, card2);
-        }
-    }
-
-    function giveTwoCardsToPlayer() public {
-        uint8 deckCardGiven = 100;
-        uint8 undefinedPlayerCard = 0;
-
-        uint8 cardsToGive = 0;
-        //uint8[] memory cardsGiven = new uint8[](2);
-        uint8[2] memory cardsGiven;
-
-        // pick two cards from deck
-        for (uint8 i = 0; i < 52 && cardsToGive < 2; i++) {
-            if(deck[i] != deckCardGiven){
-                cardsGiven[cardsToGive] = deck[i];
-                deck[i] = deckCardGiven;
-                cardsToGive++;
-            }
-        }
-
-        // assign cards to player
-        for (uint8 j = 0; j < 9 && cardsToGive > 0; j++) {
-            if(playerCards[j] == undefinedPlayerCard) {
-                cardsToGive--;
-                playerCards[j] = cardsGiven[cardsToGive];
-            }
-        }
-    }
-
-    function giveTwoCardsToDealer() public {
-        uint8 deckCardGiven = 100;
-        uint8 undefinedPlayerCard = 0;
-
-        uint8 cardsToGive = 0;
-        //uint8[] memory cardsGiven = new uint8[](2);
-        uint8[2] memory cardsGiven;
-
-        // pick two cards from deck
-        for (uint8 i = 0; i < 52 && cardsToGive < 2; i++) {
-            if(deck[i] != deckCardGiven){
-                cardsGiven[cardsToGive] = deck[i];
-                deck[i] = deckCardGiven;
-                cardsToGive++;
-            }
-        }
-
-        // assign cards to dealer
-        for (uint8 j = 0; j < 9 && cardsToGive > 0; j++) {
-            if(dealerCards[j] == undefinedPlayerCard) {
-                cardsToGive--;
-                dealerCards[j] = cardsGiven[cardsToGive];
-            }
-        }
-    }
 
     // The value of cards two through ten is their pip value (2 through 10). 
     // Face cards (Jack, Queen, and King) are all worth ten. 
@@ -163,6 +141,13 @@ contract Blackdapp {
     }
 
     function dealerDecision(uint8 playerHandValue, uint8 dealerCardValue) public pure returns (bytes2) {
+        if (dealerCardValue >= 17) {
+            return 'S';  // stand
+        }
+        if (dealerCardValue > playerHandValue) {
+            return 'S';  // stand
+        }
+        
         if (playerHandValue >= 17) {
             return 'S';  // stand
         
@@ -209,62 +194,9 @@ contract Blackdapp {
             return 'H';  // hit
         }
     }
-
-    function swap(uint8 card1, uint8 card2) private pure returns (uint8, uint8) {
-        return (card2, card1);
-    }
-
-    function swapArray(uint8[52] storage d, uint8 index1, uint8 index2) private {
-        uint8 tmp = d[index1];
-        d[index1] = d[index2];
-        d[index2] = tmp;
-    }
-
-    function randHash(uint8 _seed) private view returns (uint256) {
-        return uint256(keccak256(abi.encodePacked(block.difficulty, block.timestamp, _seed)));
-    }
-
-    // https://www.i-programmer.info/programming/theory/2744-how-not-to-shuffle-the-kunth-fisher-yates-algorithm.html
-    function randomBetween(uint256 _rand, uint8 _min, uint8 _max) private pure returns (uint8) {
-        return uint8(_min + (_rand % (_max-_min)));
-    }
-
     modifier restricted() {
         require(msg.sender == manager);
         _;
     }
 
-    function getDealerVisibleCard() public view returns (uint8) {
-        return dealerCards[0];
-    }
-
-
-
-    function initDeckMapping() public {
-        for (uint8 i = 0; i < 52; i++) {
-            deck[i] = i + 1;
-        }
-    }
-
-    function initDeck(uint8[52] storage d) private {
-        for (uint8 i = 0; i < 52; i++) {
-            d[i] = i + 1;
-        }
-    }
-
-    function initPlayerHand(uint8[9] storage hand) private {
-        uint8 undefinedCard = 0;
-
-        for (uint8 i = 0; i < 9; i++) {
-            hand[i] = undefinedCard;
-        }
-    }
-
-    function initDealerHand(uint8[9] storage hand) private {
-        uint8 undefinedCard = 0;
-
-        for (uint8 i = 0; i < 9; i++) {
-            hand[i] = undefinedCard;
-        }
-    }
 }
