@@ -38,21 +38,31 @@ contract has a 'Struct Game'
 
 # UI logic
 
-    1. wait for player to enter() the game
-    2. shuffle deck, give 2 cards to player and give 2 cards to dealer (only show 1 dealer card to the user on UI)
-    3. call public free method contract.isGameover(cards, #-of-player-cards, turn=1) -> result-is-21blackdapp-or-loose-or-continue
-    
-    3.1. if blackdapp wait for user to click get reward and call contract.finalize(cards, #-of-player-cards)
+    1. wait for player to enter($gameId) the game
+        $gameId is javascript random number
+    2. shuffle deck, call public free method contract.shuffleDeck(52) returns (deck), give 2 cards to player and give 2 cards to dealer (only show 1 dealer card to the user)
+    3. call public free method contract.isGameover($cards, $#-of-cards-given) -> $result-is-21blackdapp-or-lose-or-continue
+            turn 1 # cards is 4
+            turn 2 # cards is 5
+    3.1. if blackdapp wait for user to click get reward and call contract.finalize($cards, $#-of-player-cards)
     
     3.2. user can choose HIT or STAND
-    3.2.1 if HIT, get player a card, turn++ then continue at step#3.
-    3.2.2 if STAND, call method contract.finalize(cards, #-of-player-cards) -> payout-uint
-    5. start from 3 if result is not result-lose-true-boolean
+    3.2.1 if HIT, UI gives player a card, $#-of-cards-given++ then continue at step#3.
+    3.2.2 if STAND, call method contract.finalize($cards, $#-of-cards-given) -> $payout-uint, $#-new-cards-dealer-uint8, UI displays dealer cards and new cards, and displays result based on $payout-uint
 
 
 # cards values
 
 see spreadsheet
+
+# contract methods
+
+contract blackdapp {
+    function enter(uint8 gameId) {}
+    function shuffleDeck(uint8 numberOfCards) returns (uint8[]) public pure {}
+    function isGameover(uint8[] cards, uint8 numberOfCardsGiven) returns (uint8 result-is-21blackdapp-or-lose-or-continue) {}
+    function finalize(uint8[] cards, uint8 numberOfCardsGiven) {}
+}
 
 
 # DONE 1
