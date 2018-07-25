@@ -6,16 +6,23 @@ pragma solidity ^0.4.22;
 
 contract Blackdapp {
     address public manager;
-    uint8[52] public deck;
-    uint8[9] public playerCards;
-    uint8[9] public dealerCards;
+    
+    // uint8[52] public deck;
+    // uint8[9] public playerCards;
+    // uint8[9] public dealerCards;
+
+    mapping (uint8 => uint8) deck;
+    mapping (uint8 => uint8) playerCards;
+    mapping (uint8 => uint8) dealerCards;
+
+    uint numDeck;
 
     constructor() public {
         manager = msg.sender;
 
-        initDeck(deck);
-        initPlayerHand(playerCards);
-        initDealerHand(dealerCards);
+        // initDeck(deck);
+        // initPlayerHand(playerCards);
+        // initDealerHand(dealerCards);
     }
 
     function enter() public payable {
@@ -24,40 +31,42 @@ contract Blackdapp {
         require(msg.value > .01 ether);
     }
 
-    function initDeck(uint8[52] storage d) private {
-        for (uint8 i = 0; i < 52; i++) {
-            d[i] = i;
-        }
-    }
+    function shuffleDeckArray() public {
+        uint8[52] d;
 
-    function initPlayerHand(uint8[9] storage hand) private {
-        uint8 undefinedCard = 200;
-
-        for (uint8 i = 0; i < 9; i++) {
-            hand[i] = undefinedCard;
-        }
-    }
-
-    function initDealerHand(uint8[9] storage hand) private {
-        uint8 undefinedCard = 200;
-
-        for (uint8 i = 0; i < 9; i++) {
-            hand[i] = undefinedCard;
-        }
-    }
-
-    function shuffleDeck() public {
         for (uint8 i = 0; i < 52-1; i++) {
             uint256 rand = randHash(i);
             uint8 randIndex = randomBetween(rand, i, 52);
             
-            swap(deck, i, randIndex);
+            swapArray(d, i, randIndex);
+        }
+    }
+
+    function shuffleDeckMapping() public {
+
+        for (uint8 i = 0; i < 52-1; i++) {
+            uint256 rand = randHash(i);
+            uint8 randIndex = randomBetween(rand, i, 52);
+            
+            uint8 card1 = deck[i];
+            uint8 card2 = deck[randIndex];
+
+            // init on the fly
+            if (card1 == 0) {
+                card1 = i + 1;
+            }
+            // init on the fly
+            if (card2 == 0) {
+                card2 = randIndex + 1;
+            }
+
+            ( deck[i], deck[randIndex] ) = swap(card1, card2);
         }
     }
 
     function giveTwoCardsToPlayer() public {
         uint8 deckCardGiven = 100;
-        uint8 undefinedPlayerCard = 200;
+        uint8 undefinedPlayerCard = 0;
 
         uint8 cardsToGive = 0;
         //uint8[] memory cardsGiven = new uint8[](2);
@@ -83,7 +92,7 @@ contract Blackdapp {
 
     function giveTwoCardsToDealer() public {
         uint8 deckCardGiven = 100;
-        uint8 undefinedPlayerCard = 200;
+        uint8 undefinedPlayerCard = 0;
 
         uint8 cardsToGive = 0;
         //uint8[] memory cardsGiven = new uint8[](2);
@@ -115,7 +124,7 @@ contract Blackdapp {
     // A hand with an ace valued as 11 is called "soft", meaning that the hand will not bust by taking an additional card; 
     // the value of the ace will become one to prevent the hand from exceeding 21. Otherwise, the hand is "hard".
     function computeCardValue(uint8 card) public pure returns (uint8) {
-        uint8 undefinedPlayerCard = 200;
+        uint8 undefinedPlayerCard = 0;
 
         if (card == undefinedPlayerCard) {
             return 0;
@@ -141,7 +150,7 @@ contract Blackdapp {
     }
 
     function computePlayerHandValue(uint8[9] card) public pure returns (uint8) {
-        uint8 undefinedCard = 200;
+        uint8 undefinedCard = 0;
         uint8 handValue = 0;
 
         for (uint8 i = 0; i < 9; i++) {
@@ -201,7 +210,11 @@ contract Blackdapp {
         }
     }
 
-    function swap(uint8[52] storage d, uint8 index1, uint8 index2) private {
+    function swap(uint8 card1, uint8 card2) private pure returns (uint8, uint8) {
+        return (card2, card1);
+    }
+
+    function swapArray(uint8[52] storage d, uint8 index1, uint8 index2) private {
         uint8 tmp = d[index1];
         d[index1] = d[index2];
         d[index2] = tmp;
@@ -221,16 +234,37 @@ contract Blackdapp {
         _;
     }
 
-    function getDeck() public view returns (uint8[52]) {
-        return deck;
-    }
-
-    function getPlayerHand() public view returns (uint8[9]) {
-        return playerCards;
-    }
-
     function getDealerVisibleCard() public view returns (uint8) {
         return dealerCards[0];
     }
 
+
+
+    function initDeckMapping() public {
+        for (uint8 i = 0; i < 52; i++) {
+            deck[i] = i + 1;
+        }
+    }
+
+    function initDeck(uint8[52] storage d) private {
+        for (uint8 i = 0; i < 52; i++) {
+            d[i] = i + 1;
+        }
+    }
+
+    function initPlayerHand(uint8[9] storage hand) private {
+        uint8 undefinedCard = 0;
+
+        for (uint8 i = 0; i < 9; i++) {
+            hand[i] = undefinedCard;
+        }
+    }
+
+    function initDealerHand(uint8[9] storage hand) private {
+        uint8 undefinedCard = 0;
+
+        for (uint8 i = 0; i < 9; i++) {
+            hand[i] = undefinedCard;
+        }
+    }
 }

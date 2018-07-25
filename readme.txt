@@ -1,5 +1,55 @@
 Black Dapp - A decentralized 21 
 
+
+# design decisions
+
+contract will not self initialize a deck. it costs too much gas (gas limit reached).
+contract will not self shuffle cards. it costs too much gas (gas limit reached).
+
+source of randomness will be done in the UI. 
+before a player can play he has to enter(gameId) and pay. gameId is uniqueId generated on the UI. contract use that for multiplayer and track the user blackdapp progress. 
+
+the UI will send an event !PlayerStartedNewGame
+
+the UI will shuffle a deck of 52 cards.
+the UI will pick the random cards given to Player-John.
+the UI will pick the random cards given to Dealer-Bank.
+the UI will remember the cards given, cards[]
+    cards[0] is Player-John card-1
+    cards[1] is Player-John card-2
+    cards[2] is Dealer-Bank card-1
+    cards[3] is Dealer-Bank card-2
+the UI will hide Dealer-Bank card-2
+
+in the UI, the user will decide to 'Stand' or 'Hit'. 
+on 'Stand', the UI will call the contract finalize(cards)
+on 'Hit', the UI will call the contract finalize(cards)
+the contract will send an event, !GameResult
+    finalize(cards), will reject the user if game is not over?
+
+when Player-John decides to stand, the UI will send (cards[] and user-#-of-cards) to the contract and the contract act as Dealer-Bank and decide what to do, Hit/Stand and send the result.
+    user card are, if user-#-of-cards 4, 0, 1, 4, 5
+    dealer card are, 2, 3 and if delar needs more cards, 6, 7, etc...
+
+contract has a 'Struct Game'
+    Game.id
+    mapping(uint => Game) games;
+    address player;
+
+# UI logic
+
+    1. wait for player to enter() the game
+    2. shuffle deck, give 2 cards to player and give 2 cards to dealer (only show 1 dealer card to the user on UI)
+    3. call public free method contract.isGameover(cards, #-of-player-cards, turn=1) -> result-is-21blackdapp-or-loose-or-continue
+    
+    3.1. if blackdapp wait for user to click get reward and call contract.finalize(cards, #-of-player-cards)
+    
+    3.2. user can choose HIT or STAND
+    3.2.1 if HIT, get player a card, turn++ then continue at step#3.
+    3.2.2 if STAND, call method contract.finalize(cards, #-of-player-cards) -> payout-uint
+    5. start from 3 if result is not result-lose-true-boolean
+
+
 # cards values
 
 see spreadsheet
