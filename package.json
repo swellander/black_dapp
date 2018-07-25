@@ -1,0 +1,26 @@
+{
+  "name": "black_dapp",
+  "version": "1.0.0",
+  "description": "decentralized game of 21",
+  "main": "index.js",
+  "scripts": {
+    "test": "node node_modules/.bin/mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/swellander/black_dapp.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/swellander/black_dapp/issues"
+  },
+  "homepage": "https://github.com/swellander/black_dapp#readme",
+  "dependencies": {
+    "chai": "^4.1.2",
+    "ganache-cli": "^6.1.6",
+    "mocha": "^5.2.0",
+    "solc": "^0.4.24",
+    "web3": "^1.0.0-beta.35"
+  }
+}
