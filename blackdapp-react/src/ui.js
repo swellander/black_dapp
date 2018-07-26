@@ -1,5 +1,3 @@
-"use strict";
-
 class BackDappUi {
 
     constructor(){
@@ -13,7 +11,8 @@ class BackDappUi {
     }
 
     hit(){
-        this.playerCardsAfterTwo++;
+      this.playerCardsAfterTwo = this.playerCardsAfterTwo + 1;
+      console.log('hit', this.playerCardsAfterTwo)
     }
 
     getPlayerCardsGiven(){
@@ -33,9 +32,11 @@ class BackDappUi {
         playerCards.push(playerCard1);
         playerCards.push(playerCard2);
 
-        for (var i = this.playerCardsAfterTwo; i<this.playerCardsAfterTwo; i++){
+        for (var i = 0; i<this.playerCardsAfterTwo; i++){
             playerCards.push(deck[4+i]);
         }
+
+        console.log('getPlayerCards.length', playerCards.length)
 
         return playerCards;
     }
@@ -48,7 +49,7 @@ class BackDappUi {
     getDealerCards(){
         var dealerCards = [];
         let deck = this.getDeck();
-        
+
         dealerCards.push(deck[2]);
         dealerCards.push(deck[3]);
 
@@ -92,4 +93,8 @@ class BackDappUi {
 
 }
 
-module.exports.BackDappUi = BackDappUi;
+//use following line for tests
+//module.exports.BackDappUi = BackDappUi;
+
+// use following line for ui
+export default BackDappUi;

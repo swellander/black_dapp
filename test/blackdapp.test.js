@@ -4,7 +4,8 @@ const Web3 = require('web3');
 const web3 = new Web3(ganache.provider());
 
 const compiledBlackdapp = require('../ethereum/build/Blackdapp.json');
-const BackDappUi = require('../ui.js').BackDappUi;
+const BackDappUi = require('../blackdapp-react/src/ui.js').BackDappUi;
+//const BackDappUi = require('../blackdapp-react/src/ui.js');
 //console.log('BackDappUi require=', BackDappUi);
 const backDappUi = new BackDappUi();
 
@@ -73,7 +74,7 @@ describe('Blackdapp', () => {
   });
 
   it('compute hands', async () => {
-    // function computePlayerHand(uint8[] cards, uint8 numberOfCards) public pure returns (uint8) 
+    // function computePlayerHand(uint8[] cards, uint8 numberOfCards) public pure returns (uint8)
     const playerHandValue = await blackdappContract.methods.computePlayerHand(backDappUi.getPlayerCards(), backDappUi.getPlayerCards().length)
       .call();
     const dealerHandValue = await blackdappContract.methods.computePlayerHand(backDappUi.getDealerCards(), backDappUi.getDealerCards().length)
@@ -99,7 +100,7 @@ describe('Blackdapp', () => {
 
     //assert.ok(result);
     //assert.ok(result.returnValues);
-    
+
     // console.log('play stand. 0 is lose. 1 is win. game ended with=', result);
     // console.log('play stand. 0 is lose. 1 is win. game ended with=', result.events.GameEnded.returnValues);
     console.log('play stand. 0 is lose. 1 is win. game ended with=', result.events.GameEnded.returnValues.outcome);
@@ -108,7 +109,7 @@ describe('Blackdapp', () => {
   /*it('shuffle deck', async () => {
     await blackdappContract.methods.shuffleDeck()
       .send({from: accounts[0], gas: '1000000' });
-    
+
     const shuffledDeck = await blackdappContract.methods.getDeck().call();
 
     assert.ok(shuffledDeck);

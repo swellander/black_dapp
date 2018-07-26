@@ -6,7 +6,7 @@ pragma solidity ^0.4.22;
 
 contract Blackdapp {
     address public manager;
-    
+
     // uint8[52] public deck;
 
     struct Game {
@@ -40,7 +40,7 @@ contract Blackdapp {
 
         return value;
     }
-    
+
     function finalize(uint256 gameId, uint8[] playerCards, uint8 numberOfPlayerCards, uint8[] dealerCards, uint8[] deck) public returns (uint8) {
         uint8 playerValue = computePlayerHand(playerCards, numberOfPlayerCards);
 
@@ -54,7 +54,7 @@ contract Blackdapp {
         while(dealer == 'H'){
             uint8 dealerNewCard = deck[dealerWantsOneMoreCardCounter];
             dealerWantsOneMoreCardCounter++;
-            
+
             dealerValue += computeCardValue(dealerNewCard);
             dealer = dealerDecision(playerValue, dealerValue);
         }
@@ -94,12 +94,12 @@ contract Blackdapp {
     }
 
 
-    // The value of cards two through ten is their pip value (2 through 10). 
-    // Face cards (Jack, Queen, and King) are all worth ten. 
-    // Aces can be worth one or eleven. 
-    // A hand's value is the sum of the card values. 
-    // Players are allowed to draw additional cards to improve their hands. 
-    // A hand with an ace valued as 11 is called "soft", meaning that the hand will not bust by taking an additional card; 
+    // The value of cards two through ten is their pip value (2 through 10).
+    // Face cards (Jack, Queen, and King) are all worth ten.
+    // Aces can be worth one or eleven.
+    // A hand's value is the sum of the card values.
+    // Players are allowed to draw additional cards to improve their hands.
+    // A hand with an ace valued as 11 is called "soft", meaning that the hand will not bust by taking an additional card;
     // the value of the ace will become one to prevent the hand from exceeding 21. Otherwise, the hand is "hard".
     function computeCardValue(uint8 card) public pure returns (uint8) {
         uint8 undefinedPlayerCard = 0;
@@ -147,17 +147,17 @@ contract Blackdapp {
         if (dealerCardValue > playerHandValue) {
             return 'S';  // stand
         }
-        
+
         if (playerHandValue >= 17) {
             return 'S';  // stand
-        
+
         } else if (playerHandValue == 16 && dealerCardValue <= 6) {
             return 'S';  // stand
         } else if (playerHandValue == 16 && dealerCardValue <= 8) {
             return 'H';  // hit
         } else if (playerHandValue == 16) {
             return 'H'; // surrender or hit
-        
+
         } else if (playerHandValue == 15 && dealerCardValue < 7) {
             return 'S';  // stand
         } else if (playerHandValue == 15 && dealerCardValue >= 7) {
