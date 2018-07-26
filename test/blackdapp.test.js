@@ -73,6 +73,17 @@ describe('Blackdapp', () => {
     console.log('UI dealerCards', dealerCards);
   });
 
+  it('compute hands -- hard coded', async () => {
+    // function computePlayerHand(uint8[] cards, uint8 numberOfCards) public pure returns (uint8)
+    const playerCards = [30,0,26,15,10];
+    const playerHandValue = await blackdappContract.methods.computePlayerHand(playerCards, playerCards.length)
+      .call();
+
+    console.log('playerHandValue should be 21, it is=', playerHandValue);
+    assert.ok(playerHandValue);
+    assert.equal(playerHandValue, 40);
+  });
+
   it('compute hands', async () => {
     // function computePlayerHand(uint8[] cards, uint8 numberOfCards) public pure returns (uint8)
     const playerHandValue = await blackdappContract.methods.computePlayerHand(backDappUi.getPlayerCards(), backDappUi.getPlayerCards().length)

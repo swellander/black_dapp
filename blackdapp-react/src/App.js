@@ -12,9 +12,6 @@ import BackDappUi from './ui';
 // 0x224761054653d3056c32b097c250c1ca3c12fb55
 
 class PlayingCard extends Component {
-  constructor(props) {
-    super(props);
-  }
 
   render() {
     const text = this.props.text;
@@ -33,24 +30,39 @@ class App extends Component {
 
   constructor(props) {
     super(props);
-    this.state = { manager: '', playerCards: '' };
+    this.state = { manager: '', playerCards: '', result: '', waitTx:false };
     this.backDappUi = new BackDappUi();
   }
 
   async componentDidMount() {
-    const manager = await blackdapp.methods.manager().call();
+    const manager = await blackdapp.methods.manager()
+      .call();
     //const backDappUi = BackDappUi();
     this.setState({ manager, playerCards:this.backDappUi.getPlayerCards() });
+    this.computePlayerHand();
+  }
+
+  computePlayerHand = async () => {
+    const playerHandValue = await blackdapp.methods.computePlayerHand(this.backDappUi.getPlayerCards(), this.backDappUi.getPlayerCards().length)
+      .call();
+
+    console.log('computePlayerHand', playerHandValue)
+
+    if(playerHandValue > 21){
+      this.onClickStand()
+    }
   }
 
   reset = async () => {
     this.backDappUi = new BackDappUi();
-    this.setState({ playerCards:this.backDappUi.getPlayerCards() });
+    this.setState({ playerCards: this.backDappUi.getPlayerCards(), result: '' });
   }
 
   onClickHit = async () => {
     console.log('onClickHit')
     this.backDappUi.hit();
+
+    this.computePlayerHand()
 
     console.log('onClickHit', this.backDappUi.getPlayerCards())
     this.setState({ playerCards: this.backDappUi.getPlayerCards() });
@@ -64,10 +76,27 @@ class App extends Component {
   onClickStand = async () => {
     console.log('onClickStand')
 
+    const accounts = await web3.eth.getAccounts();
+
+    this.setState({ result: 'Waiting on transaction...', waitTx: true });
+
+    const result = await blackdapp.methods.finalize(this.backDappUi.getGameId(), this.backDappUi.getPlayerCards(), this.backDappUi.getPlayerCardsGiven(), this.backDappUi.getDealerCards(), this.backDappUi.getRemainingDeck())
+      .send({from: accounts[0], gas: '1000000' });
     // const accounts = await web3.eth.getAccounts();
     // this.setState({ message: 'Waiting on transaction success...' });
     // await lottery.methods.pickWinner().send({ from: accounts[0] });
     // this.setState({ message: 'A winner has been picked!' });
+
+    console.log('onClickStand.outcome', result.events.GameEnded.returnValues.outcome, result)
+
+    this.setState({ result: 'Waiting on transaction...', waitTx: false });
+
+    if (result.events.GameEnded.returnValues.outcome === "1" ){
+      this.setState({ result: 'You won! tx ' + result.transactionHash });
+    } else {
+      this.setState({ result: 'You lost! =( tx ' + result.transactionHash });
+    }
+
   };
 
   render() {
@@ -109,7 +138,7 @@ class App extends Component {
       // '\uD83C\uDCA1' 0xDCD1 => 56529
 
       //return (<label>{String.fromCharCode(55356)+String.fromCharCode(letter)}</label>)
-      return (<label><PlayingCard text={String.fromCharCode(55356)+String.fromCharCode(letter)} color={color} /></label>)
+      return (<label key={String.fromCharCode(55356)+String.fromCharCode(letter)}><PlayingCard text={String.fromCharCode(55356)+String.fromCharCode(letter)} color={color} /></label>)
       //return String.fromCharCode(55356)+String.fromCharCode(56481)
       //return '\uD83C\uDCA1'
       //return <li key={card1spades}><PlayingCard text={card1spades} /></li>
@@ -152,12 +181,13 @@ class App extends Component {
           <h1 className="App-title">Welcome to BlackDapp</h1>
         </header>
         <p>Contract manager is {this.state.manager}</p>
+        <p style={{fontSize: '40px', fontWeight: 'bold'}}>{this.state.result}</p>
         <p>Deck is {deck}</p>
         <p>Player cards are {playerCards}</p>
         <p>Dealer card is {dealerCards}</p>
-        <button onClick={this.onClickHit}>Hit!</button>
-        <button onClick={this.onClickStand}>Stand!</button>
-        <button onClick={this.reset}>reset</button>
+        <button disabled={this.state.waitTx} onClick={this.onClickHit}>Hit!</button>
+        <button disabled={this.state.waitTx} onClick={this.onClickStand}>Stand!</button>
+        <button disabled={this.state.waitTx} onClick={this.reset}>reset</button>
       </div>
     );
   }

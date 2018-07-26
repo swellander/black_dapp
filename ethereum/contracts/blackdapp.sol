@@ -102,42 +102,20 @@ contract Blackdapp {
     // A hand with an ace valued as 11 is called "soft", meaning that the hand will not bust by taking an additional card;
     // the value of the ace will become one to prevent the hand from exceeding 21. Otherwise, the hand is "hard".
     function computeCardValue(uint8 card) public pure returns (uint8) {
-        uint8 undefinedPlayerCard = 0;
+        // uint8 undefinedPlayerCard = 0;
 
-        if (card == undefinedPlayerCard) {
-            return 0;
-        } else if (card >= 1 && card <= 9) {
-            // clubs [2-10]
-            return card;
-        } else if (card >= 14 && card <= 22) {
-            // diamonds [2-10]
-            return card - 12;
-        } else if (card >= 27 && card <= 35) {
-            // hearts [2-10]
-            return card - 25;
-        } else if (card >= 40 && card <= 48) {
-            // spades [2-10]
-            return card - 38;
-        } else if (card == 0 || card == 13 || card == 26 || card == 39) {
+        uint8 mod13 = card % 13;
+
+        if (1 <= mod13 && mod13 <= 9) {
+            // [2-9]
+            return mod13+1;
+        } else if (mod13 == 0) {
             // ACE
             return 11;
         } else {
             // JACK or QUEEN or KING
             return 10;
         }
-    }
-
-    function computePlayerHandValue(uint8[9] card) public pure returns (uint8) {
-        uint8 undefinedCard = 0;
-        uint8 handValue = 0;
-
-        for (uint8 i = 0; i < 9; i++) {
-            if (card[i] != undefinedCard) {
-                handValue = handValue + computeCardValue(card[i]);
-            }
-        }
-
-        return handValue;
     }
 
     function dealerDecision(uint8 playerHandValue, uint8 dealerCardValue) public pure returns (bytes2) {
